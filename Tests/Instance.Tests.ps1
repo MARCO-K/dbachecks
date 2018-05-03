@@ -57,7 +57,7 @@ Describe "BUILTIN\Administrators removed" -Tags Security, BuildInAdmins, $filena
     }
 }
 
-Describe "SA Login disable" -Tags Security, SaDisabled, $filename {
+Describe "SA login disable" -Tags Security, SaDisabled, $filename {
     @(Get-Instance).ForEach{
         Context "Checking that sa login has been disabled on $psitem" {
             $results = (Get-DbaLogin -SqlInstance $psitem -Login sa).IsDisabled
@@ -67,7 +67,6 @@ Describe "SA Login disable" -Tags Security, SaDisabled, $filename {
         }
     }
 }
-
 
 Describe "OLE Automation" -Tags Security, OLEAutomation, $filename {
     $OLEAutomation = Get-DbcConfigValue policy.oleautomation
@@ -99,10 +98,10 @@ Describe "Model Database Growth" -Tags ModelDbGrowth, $filename {
 }
 
 
-Describe "Number of Error Log files" -Tags ErrorLog, $filename {
+Describe "Number of error log files" -Tags ErrorLog, $filename {
     @(Get-Instance).ForEach{
         Context "Checking Number of errorlog files on $psitem" {
-            It "Number of error log files  on $psitem should be 30" {
+            It "Number of error log files on $psitem should be 30" {
                (Connect-dbaInstance -SqlInstance $psitem).NumberOfLogFiles | Should -Be 30 -Because "This is a agreed default"
 
             }
