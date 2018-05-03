@@ -115,8 +115,8 @@ Describe "Port number" -Tags PortNumber, $filename {
             $port = (Get-DbaTcpPort -SqlInstance $psitem).Port
             It "Port number on $psitem should not be 1433 but between 1434 - 1450" {
                $port | Should -Not -Be 1433 -Because "This is a known default port"
-               $port | Should -BeGreaterThan 1434 -Because "This is an allowed port range"
-               $port | Should -BeLessThan 1451 -Because "This is an allowed port range"
+               $port | Should -BeIn (1434..1450) -Because "This is an allowed port range"
+
             }
         }
     }
