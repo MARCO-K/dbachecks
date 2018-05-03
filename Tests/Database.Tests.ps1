@@ -129,3 +129,56 @@ Describe "Compatibility Level" -Tags CompatibilityLevel, $filename {
         }
     }
 }
+
+Describe "Datafile Auto Growth Configuration" -Tags DatafileAutoGrowthType, $filename {
+    $datafilegrowthtype = Get-DbcConfigValue policy.database.filegrowthtype
+    $datafilegrowthvalue = Get-DbcConfigValue policy.database.filegrowthvalue
+    $exclude = Get-DbcConfigValue policy.database.filegrowthexcludedb
+    $exclude += $ExcludedDatabases 
+    @(Get-Instance).ForEach{
+        Context "Testing datafile growth type on $psitem" {
+            @(Get-DbaDatabaseFile -SqlInstance $psitem -ExcludeDatabase $exclude ).ForEach{
+                if (-Not (($psitem.Growth -eq 0) -and (Get-DbcConfigValue skip.database.filegrowthdisabled))) {
+                    It "$($psitem.LogicalName) on filegroup $($psitem.FileGroupName) should have GrowthType set to $datafilegrowthtype on $($psitem.SqlInstance)" {
+                        $psitem.GrowthType | Should -Be $datafilegrowthtype -Because "We expect a certain file growth type"
+                    }
+                    if ($datafilegrowthtype -eq "kb") {
+                        It "$($psitem.LogicalName) on filegroup $($psitem.FileGroupName) should have Growth set equal or higher than $datafilegrowthvalue on $($psitem.SqlInstance)" {
+                            $psitem.Growth * 8 | Should -BeGreaterOrEqual $datafilegrowthvalue  -because "We expect a certain file growth value"
+                        }
+                    }
+                    else {
+                        It "$($psitem.LogicalName) on filegroup $($psitem.FileGroupName) should have Growth set equal or higher than $datafilegrowthvalue on $($psitem.SqlInstance)" {
+                            $psitem.Growth | Should -BeGreaterOrEqual $datafilegrowthvalue  -because "We expect a certain fFile growth value"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+Describe "Logfile Auto Growth Configuration" -Tags LogfileAutoGrowthType, $filename {
+    $logfilegrowthtype = Get-DbcConfigValue policy.database.filegrowthtype
+    $logfilegrowthvalue = Get-DbcConfigValue policy.database.filegrowthvalue
+    $exclude = Get-DbcConfigValue policy.database.filegrowthexcludedb
+    $exclude += $ExcludedDatabases 
+    @(Get-Instance).ForEach{
+        Context "Testing logfile growth type on $psitem" {
+            @((Get-DbaDatabaseFile -SqlInstance $psitem -ExcludeDatabase $exclude ).Where{$_.Type -eq 1 }).ForEach{
+                if (-Not (($psitem.Growth -eq 0) -and (Get-DbcConfigValue skip.database.filegrowthdisabled))) {
+                    It "$($psitem.LogicalName) should have GrowthType set to $logfilegrowthtype on $($psitem.SqlInstance)" {
+                        $psitem.GrowthType | Should -Be $logfilegrowthtype -Because "Expected file growth type: $logfilegrowthtype"
+                    }
+
+                }
+                if ($psitem.GrowthType -eq "kb") {
+                        It "$($psitem.LogicalName) should have Growth set equal or higher than $logfilegrowthvalue on $($psitem.SqlInstance)" {
+                            $psitem.Growth | Should -BeGreaterOrEqual $logfilegrowthvalue  -because "Expected file growth value of: $logfilegrowthvalue"
+                        }
+                }
+
+            }
+        }
+    }
+}
