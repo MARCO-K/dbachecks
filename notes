@@ -1,0 +1,35 @@
+https://github.com/sqlcollaborative/dbachecks
+
+Get-DbcCheck | Out-GridView
+Get-DbcConfig | Out-GridView
+
+# Set the servers you'll be working with
+Set-DbcConfig -Name app.sqlinstance -Value sql2016, sql2017, sql2008, sql2008\express
+Set-DbcConfig -Name app.computername -Value sql2016, sql2017, sql2008
+
+# Look at the current configs
+Get-DbcConfig
+
+# Invoke a few tests
+Invoke-DbcCheck -Checks SuspectPage, LastBackup
+
+# Run checks and export its JSON
+Invoke-DbcCheck -SqlInstance sql2017 -Checks SuspectPage, LastBackup -Show Summary -PassThru | Update-DbcPowerBiDataSource -Enviornment Prod
+
+# Launch Power BI then hit refresh
+Start-DbcPowerBi
+
+
+Describe "Linked Server Connection" -Tags LinkedServerConnection, Connectivity, $filename {
+	(Get-SqlInstance).ForEach{
+		Context "Testing Linked Servers on $psitem" {
+			(Test-DbaLinkedServerConnection -SqlInstance $psitem).ForEach{
+				It "Linked Server $($psitem.LinkedServerName) has connectivity" {
+					$psitem.Connectivity | Should -BeTrue
+				}
+			}
+		}
+	}
+}
+
+Party!!!
